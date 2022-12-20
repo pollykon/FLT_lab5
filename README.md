@@ -12,6 +12,6 @@ Cоставить атрибутную грамматику для описан�
 - Определить, к какому классу (LL(k), LR(k)) относится грамматика
 - Проанализировать, при каком выборе значений токенов грамматика теряет свои свойства
 
-Дополнительное задание лежит в файле [lab_5_dop.pdf](https://github.com/pollykon/FLT_lab5/blob/main/additional/lab_5_dop.pdf)
+Дополнительное задание лежит в файле [additional/lab_5_dop.pdf](https://github.com/pollykon/FLT_lab5/blob/main/additional/lab_5_dop.pdf)
 
-**Атрибутная грамматика (in progress)**: [attribute_grammar.pdf](https://github.com/pollykon/FLT_lab5/blob/main/additional/attribute_grammar.pdf)
+**Атрибутная грамматика (in progress)**: [additional/attribute_grammar.pdf](https://github.com/pollykon/FLT_lab5/blob/main/additional/attribute_grammar.pdf)
