@@ -19,13 +19,12 @@ class Generator:
 		# TODO проверки при генерации рандомных параметров
 		# например число правил должно быть >= числу нетерминалов если 
 		# отключена генерация недостижимых 
-		self.rules_number = random.randint(*config['grammar']['rules_range'])
 		self.nonterminals_number = random.randint(*config['grammar']['nonterminals_range'])
 
 	def generate_grammar(self):
 		rules = []
 
-		for i in range(self.rules_number):
+		for i in range(self.nonterminals_number):
 			rules.append(self.generate_rule())
 
 		sep = self.config['grammar']['rule_separator']
@@ -38,8 +37,7 @@ class Generator:
 
 		productions = []
 
-		# TODO generate productions_number from rules_number and nonterminals_number
-		productions_number = random.randint(1, 3)
+		productions_number = random.randint(*config['grammar']['rules_for_nonterminal_range'])
 		for i in range(productions_number):
 			productions.append(self.generate_production())
 
