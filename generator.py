@@ -2,6 +2,7 @@ import re
 import yaml
 import random
 import rstr
+from validator import validate_config
 
 def read_config(filepath):
 	with open(filepath, 'rt') as f:
@@ -70,6 +71,7 @@ if __name__ == "__main__":
 	config_path = "configs/default.yaml"
 	config = read_config(config_path)
 	print(config)
+	validate_config(config)
 
 	gen = Generator(config)
 	print(gen.generate_grammar())
