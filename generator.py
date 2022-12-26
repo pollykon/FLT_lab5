@@ -1,13 +1,8 @@
 import re
-import yaml
 import random
 import rstr
-from validator import validate_config
-
-def read_config(filepath):
-	with open(filepath, 'rt') as f:
-		config = yaml.full_load(f.read())
-	return config
+from validator import Validate
+from utils import read_config
 
 
 class Generator:
@@ -68,10 +63,10 @@ class Generator:
 
 
 if __name__ == "__main__":
-	config_path = "configs/default.yaml"
+	config_path = "configs/test.yaml"
 	config = read_config(config_path)
-	print(config)
-	validate_config(config)
+	# print(config)
+	val = Validate(config).validate_config()
 
 	gen = Generator(config)
-	print(gen.generate_grammar())
+	# print(gen.generate_grammar())
