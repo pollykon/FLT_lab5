@@ -1,6 +1,7 @@
 import re
 import yaml
 import random
+import rstr
 
 def read_config(filepath):
 	with open(filepath, 'rt') as f:
@@ -57,12 +58,12 @@ class Generator:
 		return production
 
 	def generate_terminal(self):
-		# TODO add terminal generation from config
-		return "a"
+		return rstr.xeger(self.config['terminals']['regex'])
 		
 	def generate_nonterminal(self):
-		# TODO add nonterminal generation from config
-		return "["+"NT"+"]"
+		nonterminal_start = self.config['nonterminals']['nonterminal_start']
+		nonterminal_end = self.config['nonterminals']['nonterminal_end']
+		return nonterminal_start + rstr.xeger(self.config['nonterminals']['regex']) + nonterminal_end
 
 
 if __name__ == "__main__":
