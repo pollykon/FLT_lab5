@@ -14,7 +14,7 @@ def validate_config(config):
     check_config_bool(grammar, 'only_generating_nonterminals')
 
     if production['max_symbols'] <= 0:
-        InvalidConfigData('max_symbols should be a positive number')
+        raise InvalidConfigData('max_symbols should be a positive number')
 
 
 def check_config_bool(grammar, config_item):
