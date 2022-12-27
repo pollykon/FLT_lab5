@@ -1,6 +1,6 @@
 grammar:
-    nonterminals_range: [1, 4]
-    rules_for_nonterminal_range: [1, 3]
+    nonterminals_range: [3, 5]
+    rules_for_nonterminal_range: [1, 2]
     only_non_empty_nonterminals: False
     unreachable_nonterminals: False
     only_generating_nonterminals: False
@@ -9,8 +9,8 @@ grammar:
 
 
 terminals:
-    regex: "[a-z0-9]+"
+    regex: "[a-z0-9]"
 
 nonterminals:
     nonterminal_end: "]"
-    regex: "[A-Z]+"
+    regex: "[A-Z]"

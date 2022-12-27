@@ -1,28 +1,15 @@
 import re
 import random
 import rstr
+
+from cfg import CFG
 from validator import Validator, LL1
-from utils import read_config
+from utils import read_config, Types
 
 
 class Nonterminal:
-	def __init__(self, config, value=None, name=None):
-		if value is not None:
-			self.name = self._get_name(value, config)
-		else:
-			self.name = name
-		self.config = config
-
-	def _get_name(self, value, config):
-		return value[len(config['nonterminals']['nonterminal_start']):-len(config['nonterminals']['nonterminal_end'])]
-
-	def value(self):
-		nonterminal_start = self.config['nonterminals']['nonterminal_start']
-		nonterminal_end = self.config['nonterminals']['nonterminal_end']
-		return nonterminal_start + self.name + nonterminal_end
-
-	def __str__(self):
-		return self.value()
+	def __init__(self, config, name):
+		self.name = name
 
 
 class Generator:
@@ -38,7 +25,7 @@ class Generator:
 		self.nonterm_data[nterm_start.name] = nterm_start
 		
 		for i in range(self.nonterminals_number-1):
-			nterm = Nonterminal(config, value=self.generate_nonterminal())
+			nterm = Nonterminal(config, self.generate_nonterminal()['value'])
 			self.nonterm_data[nterm.name] = nterm
 
 	def generate_grammar(self):
@@ -47,59 +34,88 @@ class Generator:
 		#
 		rules = []
 		for nterm in self.nonterm_data.values():
-			rules.append(self.generate_rule(nterm))
+			rules.extend(self.generate_rules(nterm))
 
-		sep = self.config['grammar']['rule_separator'] + '\n'
-		return sep.join(rules)+sep
+		return self.post_process(CFG(rules, config))
 
-	def generate_rule(self, left_nterm):
-		# TODO учитывать nonterminals_number
-		arrow = self.config['grammar']['arrow']
-
+	def generate_rules(self, left_nterm):
 		productions = []
 
 		productions_number = random.randint(*config['grammar']['rules_for_nonterminal_range'])
 		for i in range(productions_number):
 			productions.append(self.generate_production())
 
+		# chance for eps
 		if random.randint(0, 1):
-			productions.append(self.generate_epsilon())
+			if len(productions) == config['grammar']['rules_for_nonterminal_range'][1]:
+				productions[-1] = [self.generate_epsilon()]
+			else:
+				productions.append([self.generate_epsilon()])
 
-		sep = ' '+self.config['grammar']['production_separator']+' '
-		productions_str = sep.join(productions)
-		return f"{left_nterm.value()} {arrow} {productions_str}" 
+		rules = [{"left": left_nterm.name, "right": production} for production in productions]
+		return rules
 
 	def generate_production(self):
 		symbols_number = random.randint(1, self.config['production']['max_symbols'])
-		production = ""
+		production = []
 		for i in range(symbols_number):
 			# 50% chance for nonterminal and 50% for terminal
 			if random.randint(0, 1):
-				production += self.choose_nonterminal_from_existing()
+				production.append(self.choose_nonterminal_from_existing())
 			else:
-				production += self.generate_terminal()
+				production.append(self.generate_terminal())
 		return production
 
 	def choose_nonterminal_from_existing(self):
-		return random.choice(list(self.nonterm_data.values())).value()
+		return {
+			'type': Types.nterm,
+			'value': random.choice(list(self.nonterm_data.values())).name
+		}
 
 	def generate_epsilon(self):
-		return config['grammar']['epsilon']
+		return {
+			'type': Types.term,
+			'value': ''
+		}
 
 	def generate_terminal(self):
-		term = rstr.xeger(self.config['terminals']['regex'])[:config['terminals']['max_length']]
-		if term == config['grammar']['epsilon']:
-			self.generate_terminal()
-		return term
+		return {
+			'type': Types.term,
+			'value': rstr.xeger(self.config['terminals']['regex'])[:self.config['terminals']['max_length']]
+		}
 		
 	def generate_nonterminal(self):
-		nonterminal_start = self.config['nonterminals']['nonterminal_start']
-		nonterminal_end = self.config['nonterminals']['nonterminal_end']
+		return {
+			'type': Types.nterm,
+			'value': rstr.xeger(self.config['nonterminals']['regex'])[:self.config['nonterminals']['max_length']]
+		}
 
-		nonterminal = rstr.xeger(self.config['nonterminals']['regex'])[:config['nonterminals']['max_length']]
-		if nonterminal == config['grammar']['epsilon']:
-			self.generate_nonterminal()
-		return nonterminal_start + nonterminal + nonterminal_end
+	def fix_reachable(self, cfg):
+		nterms_path = list(self.nonterm_data.keys())
+		nterms_path.remove(self.config['grammar']['start_nonterminal'])
+		random.shuffle(nterms_path)
+		nterms_path = [self.config['grammar']['start_nonterminal']] + nterms_path
+
+		nterm2rule = cfg.get_nonterm_to_rule()
+		# rename random nterm into next nterm in path
+		for c in range(len(nterms_path)-1):
+			rule_id = random.choice(nterm2rule[nterms_path[c]])
+			# change random symbol
+			rule = cfg.grammar[rule_id]
+			random_symbol_ind = random.randint(0, len(rule['right'])-1)
+			rule['right'][random_symbol_ind] = {
+				'type': Types.nterm,
+				'value': nterms_path[c+1]
+			}
+		return cfg
+
+	def post_process(self, cfg):
+		# if all nterms must be reachable
+		if not self.config['grammar']['unreachable_nonterminals']:
+			cfg = self.fix_reachable(cfg)
+
+		return cfg
+
 
 
 if __name__ == "__main__":
