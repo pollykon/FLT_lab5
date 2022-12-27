@@ -1,0 +1,16 @@
+grammar:
+    nonterminals_range: [1, 4]
+    rules_for_nonterminal_range: [1, 3]
+    only_non_empty_nonterminals: False
+    unreachable_nonterminals: False
+    only_generating_nonterminals: False
+
+    production_separator: "|"
+
+
+terminals:
+    regex: "[a-z0-9]"
+
+nonterminals:
+    nonterminal_end: "]"
+    regex: "[A-Z]"
