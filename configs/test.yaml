@@ -9,8 +9,8 @@ grammar:
 
 
 terminals:
-    regex: "[a-z0-9]"
+    regex: "[a-z0-9]+"
 
 nonterminals:
     nonterminal_end: "]"
-    regex: "[A-Z]"
+    regex: "[A-Z]+"
