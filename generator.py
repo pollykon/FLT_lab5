@@ -1,35 +1,59 @@
 import re
 import random
 import rstr
-from validator import Validate
+from validator import Validator
 from utils import read_config
+
+
+class Nonterminal:
+	def __init__(self, config, value=None, name=None):
+		if value is not None:
+			self.name = self._get_name(value, config)
+		else:
+			self.name = name
+		self.config = config
+
+	def _get_name(self, value, config):
+		return value[len(config['nonterminals']['nonterminal_start']):-len(config['nonterminals']['nonterminal_end'])]
+
+	def value(self):
+		nonterminal_start = self.config['nonterminals']['nonterminal_start']
+		nonterminal_end = self.config['nonterminals']['nonterminal_end']
+		return nonterminal_start + self.name + nonterminal_end
+
+	def __str__(self):
+		return self.value()
 
 
 class Generator:
 	def __init__(self, config):
 		self.config = config
-		self.nonterm_data = {}
-
-		self._generate_random_params(self.config)
 
 	def _generate_random_params(self, config):
-		# TODO проверки при генерации рандомных параметров
-		# например число правил должно быть >= числу нетерминалов если 
-		# отключена генерация недостижимых 
 		self.nonterminals_number = random.randint(*config['grammar']['nonterminals_range'])
 
-	def generate_grammar(self):
-		rules = []
+		# generate nonterminals
+		self.nonterm_data = {}
+		nterm_start = Nonterminal(config, name=self.config['grammar']['start_nonterminal'])
+		self.nonterm_data[nterm_start.name] = nterm_start
+		
+		for i in range(self.nonterminals_number-1):
+			nterm = Nonterminal(config, value=self.generate_nonterminal())
+			self.nonterm_data[nterm.name] = nterm
 
-		for i in range(self.nonterminals_number):
-			rules.append(self.generate_rule())
+	def generate_grammar(self):
+		self._generate_random_params(self.config)
+
+		#
+		rules = []
+		for nterm in self.nonterm_data.values():
+			rules.append(self.generate_rule(nterm))
 
 		sep = self.config['grammar']['rule_separator']
 		return sep.join(rules)+sep
 
-	def generate_rule(self):
+	def generate_rule(self, left_nterm):
 		# TODO учитывать nonterminals_number
-		left = self.generate_nonterminal()
 		arrow = self.config['grammar']['arrow']
 
 		productions = []
@@ -40,7 +64,7 @@ class Generator:
 
 		sep = ' '+self.config['grammar']['production_separator']+' '
 		productions_str = sep.join(productions)
-		return f"{left} {arrow} {productions_str}" 
+		return f"{left_nterm.value()} {arrow} {productions_str}" 
 
 	def generate_production(self):
 		symbols_number = random.randint(1, self.config['production']['max_symbols'])
@@ -48,10 +72,13 @@ class Generator:
 		for i in range(symbols_number):
 			# 50% chance for nonterminal and 50% for terminal
 			if random.randint(0, 1):
-				production += self.generate_nonterminal()
+				production += self.choose_nonterminal_from_existing()
 			else:
 				production += self.generate_terminal()
 		return production
+
+	def choose_nonterminal_from_existing(self):
+		return random.choice(list(self.nonterm_data.values())).value()
 
 	def generate_terminal(self):
 		return rstr.xeger(self.config['terminals']['regex'])
@@ -63,10 +90,11 @@ class Generator:
 
 
 if __name__ == "__main__":
-	config_path = "configs/test.yaml"
+	config_path = "configs/default.yaml"
 	config = read_config(config_path)
-	# print(config)
-	val = Validate(config).validate_config()
+
+	val = Validator(config)
+	val.validate_config()
 
 	gen = Generator(config)
-	# print(gen.generate_grammar())
+	print(gen.generate_grammar())
