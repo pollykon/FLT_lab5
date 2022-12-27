@@ -6,6 +6,7 @@ grammar:
     only_generating_nonterminals: False
 
     start_nonterminal: "S"
+    epsilon: "eps"
 
     production_separator: "|"
     arrow: "->"

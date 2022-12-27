@@ -62,6 +62,9 @@ class Generator:
 		for i in range(productions_number):
 			productions.append(self.generate_production())
 
+		if random.randint(0, 1):
+			productions.append(self.generate_epsilon())
+
 		sep = ' '+self.config['grammar']['production_separator']+' '
 		productions_str = sep.join(productions)
 		return f"{left_nterm.value()} {arrow} {productions_str}" 
@@ -79,6 +82,9 @@ class Generator:
 
 	def choose_nonterminal_from_existing(self):
 		return random.choice(list(self.nonterm_data.values())).value()
+
+	def generate_epsilon(self):
+		return config['grammar']['epsilon']
 
 	def generate_terminal(self):
 		return rstr.xeger(self.config['terminals']['regex'])[:config['terminals']['max_length']]
