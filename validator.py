@@ -85,7 +85,7 @@ class LL1:
     def __init__(self, config):
         self.config = config
 
-    def check_terms_nterms(self):
+    def check_ll1(self):
         config = self.config
         nonterminal_end = config['nonterminals']['nonterminal_end']
         nonterminal_start = config['nonterminals']['nonterminal_start']

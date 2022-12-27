@@ -110,7 +110,7 @@ if __name__ == "__main__":
 	val.validate_config()
 
 	ll1 = LL1(config)
-	ll1.check_terms_nterms()
+	ll1.check_ll1()
 
 	gen = Generator(config)
 	print(gen.generate_grammar())
