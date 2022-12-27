@@ -16,8 +16,10 @@ production:
 
 terminals:
     regex: "[a-z0-9]"
+    max_length: 4
 
 nonterminals:
     nonterminal_start: "["
     nonterminal_end: "]"
     regex: "[A-Z]"
+    max_length: 4

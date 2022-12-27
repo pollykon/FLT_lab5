@@ -81,12 +81,14 @@ class Generator:
 		return random.choice(list(self.nonterm_data.values())).value()
 
 	def generate_terminal(self):
-		return rstr.xeger(self.config['terminals']['regex'])
+		return rstr.xeger(self.config['terminals']['regex'])[:config['terminals']['max_length']]
 		
 	def generate_nonterminal(self):
 		nonterminal_start = self.config['nonterminals']['nonterminal_start']
 		nonterminal_end = self.config['nonterminals']['nonterminal_end']
-		return nonterminal_start + rstr.xeger(self.config['nonterminals']['regex']) + nonterminal_end
+
+		nonterminal = rstr.xeger(self.config['nonterminals']['regex'])[:config['nonterminals']['max_length']]
+		return nonterminal_start + nonterminal + nonterminal_end
 
 
 if __name__ == "__main__":
