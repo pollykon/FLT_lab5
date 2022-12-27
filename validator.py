@@ -4,7 +4,8 @@ from utils import read_config
 class InvalidConfigData(Exception):
     pass
 
-class Validate:
+
+class Validator:
     def __init__(self, config):
         self.config = config
 
