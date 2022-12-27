@@ -1,7 +1,7 @@
 import re
 import random
 import rstr
-from validator import Validator
+from validator import Validator, LL1
 from utils import read_config
 
 
@@ -49,7 +49,7 @@ class Generator:
 		for nterm in self.nonterm_data.values():
 			rules.append(self.generate_rule(nterm))
 
-		sep = self.config['grammar']['rule_separator']
+		sep = self.config['grammar']['rule_separator'] + '\n'
 		return sep.join(rules)+sep
 
 	def generate_rule(self, left_nterm):
@@ -87,22 +87,30 @@ class Generator:
 		return config['grammar']['epsilon']
 
 	def generate_terminal(self):
-		return rstr.xeger(self.config['terminals']['regex'])[:config['terminals']['max_length']]
+		term = rstr.xeger(self.config['terminals']['regex'])[:config['terminals']['max_length']]
+		if term == config['grammar']['epsilon']:
+			self.generate_terminal()
+		return term
 		
 	def generate_nonterminal(self):
 		nonterminal_start = self.config['nonterminals']['nonterminal_start']
 		nonterminal_end = self.config['nonterminals']['nonterminal_end']
 
 		nonterminal = rstr.xeger(self.config['nonterminals']['regex'])[:config['nonterminals']['max_length']]
+		if nonterminal == config['grammar']['epsilon']:
+			self.generate_nonterminal()
 		return nonterminal_start + nonterminal + nonterminal_end
 
 
 if __name__ == "__main__":
-	config_path = "configs/default.yaml"
+	config_path = "configs/test.yaml"
 	config = read_config(config_path)
 
 	val = Validator(config)
 	val.validate_config()
+
+	ll1 = LL1(config)
+	ll1.check_terms_nterms()
 
 	gen = Generator(config)
 	print(gen.generate_grammar())

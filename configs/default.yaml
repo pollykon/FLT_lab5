@@ -10,7 +10,7 @@ grammar:
 
     production_separator: "|"
     arrow: "->"
-    rule_separator: ";\n"
+    rule_separator: ";"
 
 production:
     max_symbols: 5

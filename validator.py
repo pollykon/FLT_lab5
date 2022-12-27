@@ -1,7 +1,11 @@
 from utils import read_config
+import re
 
 
 class InvalidConfigData(Exception):
+    pass
+
+class NotLL1Grammar(Exception):
     pass
 
 
@@ -75,3 +79,52 @@ class Validator:
                     self.config[lacking_param] = default_config[lacking_param]
                 else:
                     self.config[key][lacking_param] = default_config[key][lacking_param]
+
+
+class LL1:
+    def __init__(self, config):
+        self.config = config
+
+    def check_terms_nterms(self):
+        config = self.config
+        nonterminal_end = config['nonterminals']['nonterminal_end']
+        nonterminal_start = config['nonterminals']['nonterminal_start']
+
+        if nonterminal_start == '' or nonterminal_end == '':
+            raise NotLL1Grammar("For LL1 Grammar add nonempty nonterminal_start and nonterminal_end")
+        if config['terminals']['regex'] == '':
+            raise NotLL1Grammar("For LL1 Grammar add nonempty regex for terminals")
+        if config['nonterminals']['regex'] == '':
+            raise NotLL1Grammar("For LL1 Grammar add nonempty regex for nonterminals")
+
+        term = re.compile(config['terminals']['regex'])
+        nterm = re.compile(config['nonterminals']['regex'])
+        if term.match(nonterminal_end) or term.match(nonterminal_start):
+            raise NotLL1Grammar(
+                "For LL1 Grammar nonterminal_start and nonterminal_end should be different from terminals")
+        if nterm.match(nonterminal_end) or nterm.match(nonterminal_start):
+            raise NotLL1Grammar(
+                "For LL1 Grammar nonterminal_start and nonterminal_end should be different from nonterminals")
+
+        epsilon = config['grammar']['epsilon']
+        if epsilon == nonterminal_end or epsilon == nonterminal_start:
+            raise NotLL1Grammar("For LL1 Grammar epsilon should be different from nonterminal_end and nonterminal_start")
+
+        production_sep = config['grammar']['production_separator']
+        if production_sep == '':
+            raise NotLL1Grammar("For LL1 Grammar production_separator should be nonempty")
+        if term.match(production_sep):
+            raise NotLL1Grammar("For LL1 Grammar production_separator should be different from terminals")
+        if production_sep == nonterminal_start:
+            raise NotLL1Grammar("For LL1 Grammar production_separator should be different from nonterminal_start")
+
+        rule_sep = config['grammar']['rule_separator']
+        if rule_sep == '':
+            raise NotLL1Grammar("For LL1 Grammar rule_separator should be nonempty")
+        if production_sep == rule_sep:
+            raise NotLL1Grammar("For LL1 Grammar rule_separator should be different from production_separator")
+        if rule_sep == nonterminal_start or rule_sep == nonterminal_end:
+            raise NotLL1Grammar(
+                "For LL1 Grammar rule_separator should be different from nonterminal_end and nonterminal_start")
+        if term.match(rule_sep):
+            raise NotLL1Grammar("For LL1 Grammar rule_separator should be different from terminals")
