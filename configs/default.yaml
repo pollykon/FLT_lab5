@@ -6,11 +6,14 @@ grammar:
     only_generating_nonterminals: False
 
     start_nonterminal: "S"
-    epsilon: "eps"
 
     production_separator: "|"
     arrow: "->"
     rule_separator: ";"
+
+epsilon:
+    value: "epsilon"
+    chance: 0.35
 
 production:
     max_symbols: 5

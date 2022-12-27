@@ -46,7 +46,7 @@ class Generator:
 			productions.append(self.generate_production())
 
 		# chance for eps
-		if random.randint(0, 1):
+		if random.random() < config['epsilon']['chance']:
 			if len(productions) == config['grammar']['rules_for_nonterminal_range'][1]:
 				productions[-1] = [self.generate_epsilon()]
 			else:

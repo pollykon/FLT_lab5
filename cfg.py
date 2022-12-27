@@ -80,7 +80,7 @@ class CFG:
 						production += nonterminal_start + item['value'] + nonterminal_end
 					else:
 						if len(item['value']) == 0:
-							production += str(self.config['grammar']['epsilon'])
+							production += str(self.config['epsilon']['value'])
 						else:
 							production += item['value']
 				productions.append(production)

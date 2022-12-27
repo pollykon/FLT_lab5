@@ -18,6 +18,7 @@ class Validator:
 
         grammar = self.config['grammar']
         production = self.config['production']
+        epsilon = self.config['epsilon']
 
         self.check_config_list(grammar, 'nonterminals_range')
         self.check_config_list(grammar, 'rules_for_nonterminal_range')
@@ -28,6 +29,8 @@ class Validator:
 
         if production['max_symbols'] <= 0:
             raise InvalidConfigData('max_symbols should be a positive number')
+        if epsilon['chance'] > 1:
+            raise InvalidConfigData('chance should be less than 1')
 
     def check_config_bool(self, grammar, config_item):
         if not isinstance(grammar[config_item], bool):
@@ -51,6 +54,7 @@ class Validator:
         default_production = list(default_config['production'].keys())
         default_terms = list(default_config['terminals'].keys())
         default_nterms = list(default_config['nonterminals'].keys())
+        default_epsilon = list(default_config['epsilon'].keys())
 
         # "первый уровень" конфига
         defined_params = list(self.config.keys())
@@ -63,11 +67,13 @@ class Validator:
         defined_production = list(self.config['production'].keys())
         defined_terms = list(self.config['terminals'].keys())
         defined_nterms = list(self.config['nonterminals'].keys())
+        defined_epsilon = list(self.config['epsilon'].keys())
 
         self.add_config(defined_grammar, default_grammar, default_config, 'grammar')
         self.add_config(defined_production, default_production, default_config, 'production')
         self.add_config(defined_terms, default_terms, default_config, 'terminals')
         self.add_config(defined_nterms, default_nterms, default_config, 'nonterminals')
+        self.add_config(defined_epsilon, default_epsilon, default_config, 'value')
 
     def add_config(self, defined_params, default_params, default_config, key):
         sorted_defined_params = sorted(defined_params)
@@ -106,7 +112,7 @@ class LL1:
             raise NotLL1Grammar(
                 "For LL1 Grammar nonterminal_start and nonterminal_end should be different from nonterminals")
 
-        epsilon = config['grammar']['epsilon']
+        epsilon = config['epsilon']['value']
         if epsilon == nonterminal_end or epsilon == nonterminal_start:
             raise NotLL1Grammar("For LL1 Grammar epsilon should be different from nonterminal_end and nonterminal_start")
 
