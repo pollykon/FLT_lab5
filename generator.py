@@ -55,16 +55,25 @@ class Generator:
 		rules = [{"left": left_nterm.name, "right": production} for production in productions]
 		return rules
 
-	def generate_production(self):
+	def generate_production(self, generate_nterms=True):
 		symbols_number = random.randint(1, self.config['production']['max_symbols'])
 		production = []
 		for i in range(symbols_number):
 			# 50% chance for nonterminal and 50% for terminal
-			if random.randint(0, 1):
+			if generate_nterms and random.randint(0, 1):
 				production.append(self.choose_nonterminal_from_existing())
 			else:
 				production.append(self.generate_terminal())
 		return production
+
+	def generate_random_generating_symbol(self, nterms_to_choose):
+		if len(nterms_to_choose) == 0 or random.randint(0, 1):
+			return self.generate_terminal()
+		else:
+			return {
+				'type': Types.nterm,
+				'value': random.choice(list(nterms_to_choose))
+			}
 
 	def choose_nonterminal_from_existing(self):
 		return {
@@ -107,15 +116,68 @@ class Generator:
 				'type': Types.nterm,
 				'value': nterms_path[c+1]
 			}
+		return cfg, nterms_path
+
+	def fix_generating(self, cfg, nterms_path=None):
+		gen_nterms = cfg.find_generating_nterms()
+		nterm2rules = cfg.get_nonterm_to_rule()
+
+		# make last nterm in path generating
+		if nterms_path is not None:
+			last_nterm = nterms_path[-1]
+			if last_nterm not in gen_nterms:
+				# if we can add terminal production
+				if len(nterm2rules[last_nterm]) < self.config['grammar']['rules_for_nonterminal_range'][1]:
+					rule = {"left": last_nterm, "right": self.generate_production(generate_nterms=False)}
+					cfg.add_rule(rule)
+				else:
+					rule_ind = random.choice(nterm2rules[last_nterm])
+					for c in range(len(cfg.grammar[rule_ind]['right'])):
+						elem = cfg.grammar[rule_ind]['right'][c]
+						if elem['type'] == Types.nterm and elem['value'] not in gen_nterms:
+							new_elem = self.generate_random_generating_symbol(gen_nterms)
+							cfg.grammar[rule_ind]['right'][c] = new_elem
+
+
+		gen_nterms = cfg.find_generating_nterms()
+		nterm2rules = cfg.get_nonterm_to_rule()
+		if nterms_path is not None:
+			nterms_path_todo = nterms_path[-1][::-1]
+		else:
+			nterms_path_todo = list(cfg.nonterms)
+
+		nterm_counter = 0
+		while gen_nterms != cfg.nonterms and nterm_counter < len(nterms_path_todo):
+			nterm = nterms_path_todo[nterm_counter]
+
+			if nterm in gen_nterms:
+				nterm_counter += 1
+				continue
+
+			rule_ind = random.choice(nterm2rules[nterm])
+			for c in range(len(cfg.grammar[rule_ind]['right'])):
+				elem = cfg.grammar[rule_ind]['right'][c]
+				if elem['type'] == Types.nterm and elem['value'] not in gen_nterms:
+					new_elem = self.generate_random_generating_symbol(gen_nterms)
+					cfg.grammar[rule_ind]['right'][c] = new_elem
+
+			gen_nterms = cfg.find_generating_nterms()
+			nterm_counter += 1
+
+		# add term production where we can
+		# for nterm
 		return cfg
 
 	def post_process(self, cfg):
-		# if all nterms must be reachable
+		# if all nterms should be reachable
+		nterms_path = None
 		if not self.config['grammar']['unreachable_nonterminals']:
-			cfg = self.fix_reachable(cfg)
+			cfg, nterms_path = self.fix_reachable(cfg)
+
+		if self.config['grammar']['only_generating_nonterminals']:
+			cfg = self.fix_generating(cfg, nterms_path=nterms_path)
 
 		return cfg
-
 
 
 if __name__ == "__main__":
@@ -129,4 +191,8 @@ if __name__ == "__main__":
 	ll1.check_ll1()
 
 	gen = Generator(config)
-	print(gen.generate_grammar())
+	cfg = gen.generate_grammar()
+	print(cfg)
+	gen_nterms = cfg.find_generating_nterms()
+	#print(gen_nterms)
+	print('is generating:', gen_nterms==cfg.nonterms)

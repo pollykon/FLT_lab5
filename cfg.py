@@ -61,6 +61,37 @@ class CFG:
 				nonterm_to_rule[left] = [c]
 		return nonterm_to_rule
 
+	def is_generating_rule(self, rule, generating_nterms=set()):
+		is_generating = True
+		for item in rule['right']:
+			if item['type'] == Types.nterm and item['value'] not in generating_nterms:
+				is_generating = False
+				break
+		return is_generating
+
+	def find_generating_nterms(self):
+		generating_nterms = set()
+		rules_to_skip = set()
+
+		for c, rule in enumerate(self.grammar):
+			left = rule['left']
+			if self.is_generating_rule(rule):
+				generating_nterms.add(left)
+				rules_to_skip.add(c)
+
+		changed = True
+		while changed:
+			changed = False
+			for c, rule in enumerate(self.grammar):
+				left = rule['left']
+				if left not in generating_nterms:
+					if c not in rules_to_skip and self.is_generating_rule(rule, generating_nterms):
+						generating_nterms.add(left)
+						rules_to_skip.add(c)
+						changed = True
+
+		return generating_nterms
+
 	def __str__(self):
 		nonterminal_start = self.config['nonterminals']['nonterminal_start']
 		nonterminal_end = self.config['nonterminals']['nonterminal_end']

@@ -41,7 +41,7 @@ class Validator:
             raise InvalidConfigData(config_item + ' should be list')
         if len(grammar[config_item]) != 2:
             raise InvalidConfigData('Length of ' + config_item + ' should be 2')
-        if grammar[config_item][0] >= grammar[config_item][1]:
+        if grammar[config_item][0] > grammar[config_item][1]:
             raise InvalidConfigData('First number in ' + config_item + ' should be less than the second one')
 
     def check_is_user_config_full(self):

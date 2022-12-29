@@ -1,12 +1,14 @@
 grammar:
     nonterminals_range: [3, 5]
-    rules_for_nonterminal_range: [1, 2]
+    rules_for_nonterminal_range: [1, 1]
     only_non_empty_nonterminals: False
     unreachable_nonterminals: False
-    only_generating_nonterminals: False
+    only_generating_nonterminals: True
 
     production_separator: "|"
 
+production:
+    max_symbols: 1
 
 terminals:
     regex: "[a-z0-9]"
