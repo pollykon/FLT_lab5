@@ -4,7 +4,7 @@ import rstr
 
 from cfg import CFG
 from validator import Validator, LL1
-from utils import read_config, Types
+from utils import read_config, input_config, Types
 
 
 class Nonterminal:
@@ -20,20 +20,19 @@ class Generator:
 		self.nonterminals_number = random.randint(*config['grammar']['nonterminals_range'])
 
 		# generate nonterminals
-		self.nonterm_data = {}
-		nterm_start = Nonterminal(config, name=self.config['grammar']['start_nonterminal'])
-		self.nonterm_data[nterm_start.name] = nterm_start
+		self.nonterms = set()
+		nterm_start = self.config['grammar']['start_nonterminal']
+		self.nonterms.add(nterm_start)
 		
 		for i in range(self.nonterminals_number-1):
-			nterm = Nonterminal(config, self.generate_nonterminal()['value'])
-			self.nonterm_data[nterm.name] = nterm
+			self.nonterms.add(self.generate_nonterminal()['value'])
 
 	def generate_grammar(self):
 		self._generate_random_params(self.config)
 
 		#
 		rules = []
-		for nterm in self.nonterm_data.values():
+		for nterm in self.nonterms:
 			rules.extend(self.generate_rules(nterm))
 
 		return self.post_process(CFG(rules, config))
@@ -52,7 +51,7 @@ class Generator:
 			else:
 				productions.append([self.generate_epsilon()])
 
-		rules = [{"left": left_nterm.name, "right": production} for production in productions]
+		rules = [{"left": left_nterm, "right": production} for production in productions]
 		return rules
 
 	def generate_production(self, generate_nterms=True):
@@ -78,7 +77,7 @@ class Generator:
 	def choose_nonterminal_from_existing(self):
 		return {
 			'type': Types.nterm,
-			'value': random.choice(list(self.nonterm_data.values())).name
+			'value': random.choice(list(self.nonterms))
 		}
 
 	def generate_epsilon(self):
@@ -100,7 +99,7 @@ class Generator:
 		}
 
 	def fix_reachable(self, cfg):
-		nterms_path = list(self.nonterm_data.keys())
+		nterms_path = list(self.nonterms)
 		nterms_path.remove(self.config['grammar']['start_nonterminal'])
 		random.shuffle(nterms_path)
 		nterms_path = [self.config['grammar']['start_nonterminal']] + nterms_path
@@ -164,8 +163,6 @@ class Generator:
 			gen_nterms = cfg.find_generating_nterms()
 			nterm_counter += 1
 
-		# add term production where we can
-		# for nterm
 		return cfg
 
 	def post_process(self, cfg):
@@ -181,8 +178,7 @@ class Generator:
 
 
 if __name__ == "__main__":
-	config_path = "configs/test.yaml"
-	config = read_config(config_path)
+	config = input_config()
 
 	val = Validator(config)
 	val.validate_config()
@@ -193,6 +189,8 @@ if __name__ == "__main__":
 	gen = Generator(config)
 	cfg = gen.generate_grammar()
 	print(cfg)
+
 	gen_nterms = cfg.find_generating_nterms()
-	#print(gen_nterms)
+
 	print('is generating:', gen_nterms==cfg.nonterms)
+	print('all reachable:', cfg.is_all_rules_reachable()==cfg.nonterms)
