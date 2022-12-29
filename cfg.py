@@ -92,6 +92,25 @@ class CFG:
 
 		return generating_nterms
 
+	def is_all_rules_reachable(self):
+		nterm2rules = self.get_nonterm_to_rule()
+		stack = [self.config['grammar']['start_nonterminal']]
+		visited = set()
+
+		while len(stack)>0:
+			nterm = stack.pop(0)
+			visited.add(nterm)
+
+			rules = nterm2rules[nterm]
+			for i in rules:
+				rule = self.grammar[i]
+				for elem in rule['right']:
+					if elem['type'] == Types.nterm and elem['value'] not in visited:
+						visited.add(elem['value'])
+						stack.append(elem['value'])
+		return visited
+
+
 	def __str__(self):
 		nonterminal_start = self.config['nonterminals']['nonterminal_start']
 		nonterminal_end = self.config['nonterminals']['nonterminal_end']
