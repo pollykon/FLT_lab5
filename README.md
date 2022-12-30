@@ -14,4 +14,30 @@ Cоставить атрибутную грамматику для описан�
 
 Дополнительное задание лежит в файле [additional/lab_5_dop.pdf](https://github.com/pollykon/FLT_lab5/blob/main/additional/lab_5_dop.pdf)
 
-**Атрибутная грамматика (in progress)**: [additional/attribute_grammar.pdf](https://github.com/pollykon/FLT_lab5/blob/main/additional/attribute_grammar.pdf)
+**Атрибутная грамматика**: [additional/attribute_grammar.pdf](https://github.com/pollykon/FLT_lab5/blob/main/additional/attribute_grammar.pdf)
+
+**Документация в Latex**:
+
+## Установка
+
+```bash
+git clone https://github.com/pollykon/FLT_lab5
+cd FLT_lab5
+pip install -r requirements.txt
+```
+
+## Запуск
+
+Чтобы сгенерировать грамматику создайте конфиг-файл с параметрами конфигурации, либо используйте готовый, и запустите файл `generator.py`, направив поток входных данных из конфига.
+
+```bash
+python generator.py < configs/default.yaml
+```
+
+Можно запустить генератор с проверкой пользовательского синтаксиса на LL(1). Для этого используйте ключ `--check-ll1`
+
+```bas
+python generator.py --check-ll1 < configs/default.yaml
+```
+
+Более подробная [документация в latex]()

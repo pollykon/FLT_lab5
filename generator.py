@@ -6,6 +6,7 @@ from cfg import CFG
 from validator import Validator, LL1
 from utils import read_config, input_config, Types
 
+import argparse
 
 class Nonterminal:
 	def __init__(self, config, name):
@@ -178,13 +179,18 @@ class Generator:
 
 
 if __name__ == "__main__":
+	parser = argparse.ArgumentParser(description='CFG Generator')
+	parser.add_argument('--check-ll1', action='store_true', help='Проверять синтаксис на LL(1)')
+	args = parser.parse_args()
+		
 	config = input_config()
 
 	val = Validator(config)
 	val.validate_config()
 
-	ll1 = LL1(config)
-	ll1.check_ll1()
+	if args.check_ll1:
+		ll1 = LL1(config)
+		ll1.check_ll1()
 
 	gen = Generator(config)
 	cfg = gen.generate_grammar()
