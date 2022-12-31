@@ -16,7 +16,7 @@ Cоставить атрибутную грамматику для описан�
 
 **Атрибутная грамматика**: [additional/attribute_grammar.pdf](https://github.com/pollykon/FLT_lab5/blob/main/additional/attribute_grammar.pdf)
 
-**Документация в Latex**:
+**Документация в Latex**: [documentation.pdf](https://github.com/pollykon/FLT_lab5/blob/main/documentation.pdf)
 
 ## Установка
 
@@ -40,4 +40,4 @@ python generator.py < configs/default.yaml
 python generator.py --check-ll1 < configs/default.yaml
 ```
 
-Более подробная [документация в latex]()
+Более подробная [документация в latex](https://github.com/pollykon/FLT_lab5/blob/main/documentation.pdf)
