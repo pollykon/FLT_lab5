@@ -142,7 +142,7 @@ class Generator:
 		gen_nterms = cfg.find_generating_nterms()
 		nterm2rules = cfg.get_nonterm_to_rule()
 		if nterms_path is not None:
-			nterms_path_todo = nterms_path[-1][::-1]
+			nterms_path_todo = nterms_path[:-1][::-1]
 		else:
 			nterms_path_todo = list(cfg.nonterms)
 
