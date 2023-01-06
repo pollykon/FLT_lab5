@@ -1,5 +1,6 @@
 from utils import read_config
 import re
+from pyformlang.regular_expression import Regex
 
 
 class InvalidConfigData(Exception):
@@ -97,7 +98,10 @@ class LL1:
         nonterminal_start = config['nonterminals']['nonterminal_start']
 
         if nonterminal_start == '' or nonterminal_end == '':
-            raise NotLL1Grammar("For LL1 Grammar add nonempty nonterminal_start and nonterminal_end")
+            intersection = self.get_intersection_of_regex(config['terminals']['regex'], config['nonterminals']['regex']).minimize()
+            if not intersection.is_empty():
+                raise NotLL1Grammar("As nonterminal_end and nonterminal_start are empty, for For LL1 Grammar "
+                                    "nonterminals and terminals regexes shouldn't intersect")
         if config['terminals']['regex'] == '':
             raise NotLL1Grammar("For LL1 Grammar add nonempty regex for terminals")
         if config['nonterminals']['regex'] == '':
@@ -134,3 +138,8 @@ class LL1:
                 "For LL1 Grammar rule_separator should be different from nonterminal_end and nonterminal_start")
         if term.match(rule_sep):
             raise NotLL1Grammar("For LL1 Grammar rule_separator should be different from terminals")
+
+    def get_intersection_of_regex(self, regex1, regex2):
+        nfa1 = Regex(regex1).to_epsilon_nfa()
+        nfa2 = Regex(regex2).to_epsilon_nfa()
+        return nfa1.get_intersection(nfa2)

@@ -11,8 +11,9 @@ production:
     max_symbols: 1
 
 terminals:
-    regex: "[a-z0-9]"
+    regex: "ba"
 
 nonterminals:
-    nonterminal_end: "]"
-    regex: "[A-Z]"
+    nonterminal_end: ""
+    nonterminal_start: ""
+    regex: "ba*"

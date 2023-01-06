@@ -1,0 +1,203 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{listings}
+\usepackage[a4paper, total={6in, 10in}]{geometry}
+
+\title{Документация к генератору кс-грамматики}
+\author{Константинова Полина, Павлов Игорь}
+
+\begin{document}
+
+\maketitle
+
+\newpage
+\tableofcontents
+
+\newpage
+
+\section{Описание грамматики}
+\subsection{Грамматика}
+\qquad Программа генерирует КС-грамматики, описывающиеся грамматикой, приведённой ниже:
+\begin{lstlisting}
+<grammar> ::= <rule> <rule-sep> <grammar-tail>
+<grammar-tail> ::= <rule> <rule-sep> <grammar-tail>
+<grammar-tail> ::=
+
+<rule> ::= <nonterm> <arrow> <rule-right>
+
+<rule-right> ::= <production> <rule-tail>
+<rule-tail> ::= <production-sep> <production> <rule-tail>
+<rule-tail> ::=
+
+<production> ::= <epsilon>
+<production> ::= <term> <production-tail>
+<production> ::= <nonterm> <production-tail>
+
+<production-tail> ::= <term> <production-tail>
+<production-tail> ::= <nonterm> <production-tail>
+<production-tail> ::=
+
+<term> ::= <term-regex>
+<nonterm> ::= <nterm-start> <nterm-regex> <nterm-end>
+\end{lstlisting}
+
+Токены, задаваемые пользователем:
+
+\begin{lstlisting}
+<rule-sep>
+<arrow>
+<production-sep>
+<nterm-start>
+<nterm-end>
+<term-regex>
+<nterm-regex>
+\end{lstlisting}
+
+\subsection{Свойства грамматики}
+\justifying
+\qquad При разумном выборе пользователем токенов грамматика детерминированная и \verb|LL(1)|. Грамматика \verb|LR(1)|, так как префикс-свойство не выполняется.
+
+\section{Генератор}
+\subsection{Возможности}
+\qquad Данная программа позволяет генерировать КС-грамматики с пользовательским синтаксисом. Есть возможность генерировать только достижимые нетерминалы, только генерирующие нетерминалы и нетерминалы, не порождающие пустые слова.
+
+\quad Также есть возможность проверки грамматики на \verb|LL(1)|. Если пользовательский синтаксис будет нарушать \verb|LL(1)|, выведется ошибка, которая укажет, какие токены надо заменить.
+
+\quad Грамматика генерируется не в виде строки, а в виде  структуры. Поэтому есть возможность применять алгоритмы анализа КС-грамматик.
+
+\subsection{Установка и запуск}
+\qquad Для запуска генератора вам понадобится язык программирования python3 и установщик пакетов pip. Далее склонируйте репозиторий и установите зависимости:
+
+\begin{lstlisting}
+git clone https://github.com/pollykon/FLT_lab5
+cd FLT_lab5
+pip install -r requirements.txt
+\end{lstlisting}
+
+\qquad Для работы генератора необходимо создать конфигурационный файл и указать в нем параметры генерации. Для запуска генератора используйте команду:
+
+\begin{lstlisting}
+python generator.py < path/to/config.yaml
+\end{lstlisting}
+
+\qquad Программа выведет сгенерированную грамматику, а также два флага: являются ли все правила достижимыми и все нетерминалы порождающими.
+
+\qquad Чтобы включить проверку получаемой грамматики на LL(1) свойство, используйте ключ \verb|--check-ll1|:
+
+\begin{lstlisting}
+python generator.py --check-ll1 < path/to/config.yaml
+\end{lstlisting}
+
+\subsection{Структура проекта}
+
+\begin{lstlisting}
+FLT_lab5/
+- .gitignore
+- additional/
+│   - attribute_grammar.pdf
+│   - lab_5_dop.pdf
+- cfg.py
+- configs/
+│   - default.yaml
+│   - test.yaml
+- generator.py
+- README.md
+- requirements.txt
+- utils.py
+- validator.py
+\end{lstlisting}
+
+\qquad В репозитории в директории \verb|configs| лежат конфигурационные файлы в формате \verb|yaml|. В \verb|validator.py| находится код валидации параметров конфига и проверки получаемой грамматики на LL(1) свойство. В модуле \verb|cfg.py| объявлен класс, описывающий КС-грамматику. Основной модуль - \verb|generator.py|, в нем находится код генератора. Генератор генерирует грамматику в виде экземпляра класса \verb|CFG|.
+
+\subsection{Настраиваемые параметры}
+\qquad В репозитории в директории \verb|configs| лежат файлы с пользовательским синтаксисом. Параметры указываются в файле формата \verb|yaml|. Если какие-то параметры пользователь не указал, они загружаются из файла \verb|default.yaml|.
+
+\verb|grammar|:
+
+\verb|nonterminals_range| - (list) диапазон количества нетерминалов. Значение по умолчанию: \verb|[1, 6]|;
+
+\verb|rules_for_nonterminal_range| - (list) диапазон количества правил для нетерминала. Значение по умолчанию: \verb|[1, 3]|;
+
+\verb|only_non_empty_nonterminals| - (boolean) флаг для генерации нетерминалов, не порождающих пустое слово (при значении \verb|True|). Значение по умолчанию: \verb|False|;
+
+\verb|unreachable_nonterminals| - (boolean) флаг для генерации недостижимых нетерминалов (при значении \verb|True|). Значение по умолчанию: \verb|False|;
+
+\verb|only_generating_nonterminals| - (boolean) флаг для генерации только порождающих нетерминалов (при значении \verb|True|). Значение по умолчанию: \verb|False|;
+
+\verb|start_nonterminal| - (string) стартовый нетерминал. Значение по умолчанию: \verb|S|;
+
+\verb|production_separator| - (string) разделитель для продукций. Значение по умолчанию: |;
+
+\verb|arrow| - (string) разделитель для нетерминала и его правила. Значение по умолчанию: \verb|->|;
+
+\verb|rule_separator| - (string) разделитель для правил. Значение по умолчанию \verb|;|;
+
+\verb|epsilon|:
+
+\verb|value| - (string) символ, обозначающий пустое слово. Значение по умолчанию: \verb|eps|;
+
+\verb|chance| - (float) вероятность добавления пустого слова к правилу. Значение по умолчанию: \verb|0.35|;
+
+\verb|production|:
+
+\verb|max_symbols| - (int) максимальное количество элементов продукции. Значение по умолчанию: \verb|5|;
+\verb|terminals|:
+
+\verb|regex| - (string) регулярное выражение для задания значений терминалов. Значение по умолчанию: \verb|[a-z0-9]|;
+
+\verb|max_length| - (int) максимальная длина терминала. Значение по умолчанию: \verb|4|;
+
+\verb|nonterminals|:
+
+\verb|nonterminal_start| - (string) разделитель для отличия нетерминала от терминала (в начале нетерминала). Значение по умолчанию: \verb|[|;
+
+\verb|nonterminal_end| - (string) разделитель для отличия нетерминала от терминала (в конце нетерминала). Значение по умолчанию: \verb|]|;
+
+\verb|regex| - (string) регулярное выражение для задания значений  нетерминалов. Значение по умолчанию: \verb|[A-Z]|;
+
+\verb|max_length| - (int) максимальная длина нетерминала. Значение по умолчанию: \verb|4|;
+
+\section{Примеры работы}
+
+\subsection{Стандартное использование}
+Запустим генератор, используя конфигурационный файл по-умолчанию:
+
+\begin{lstlisting}
+$ python generator.py < configs/default.yaml
+[H] -> [P]6g[H] | [J][O][H];
+[O] -> [O]k4[H][H] | [S]n;
+[P] -> [S][S]5[J] | [J] | epsilon;
+[S] -> [S] | [P];
+[J] -> [O][O][S][J];
+
+is generating: False
+all reachable: True
+\end{lstlisting}
+
+Попробуем изменить параметр \verb|production_separator| в конфигурационном файле на \verb|;| и включить проверку на LL(1):
+
+\begin{lstlisting}
+$ python generator.py --check-ll1 < configs/default.yaml
+Traceback (most recent call last):
+  File ...
+  ...
+validator.NotLL1Grammar: For LL1 Grammar rule_separator
+should be different from production_separator
+\end{lstlisting}
+
+\subsection{Продвинутое использование}
+
+Объявим класс генератора \verb|Generator| и попробуем сгенерировать грамматику. \verb|Generator| инициализируется конфигом, который можно считать, используя библиотеку \verb|pyyaml|.
+
+\begin{lstlisting}
+from generator import Generator
+from cfg import CFG
+
+gen = Generator(config)
+cfg = gen.generate_grammar()
+\end{lstlisting}
+
+\verb|cfg| - экземпляр класса \verb|CFG|. Этот класс можно расширить, добавив методы для анализа и обработки КС-грамматик. Работа с классом \verb|CFG| абстрагирована от пользовательского синтаксиса, при этом \verb|print(cfg)| выведет грамматику в пользовательском синтаксисе.
+
+\end{document}
