@@ -108,7 +108,8 @@ class LL1:
             raise NotLL1Grammar("For LL1 Grammar add nonempty regex for nonterminals")
 
         term = re.compile(config['terminals']['regex'])
-        nterm = re.compile(config['nonterminals']['regex'])
+        nterm_full_regex = nonterminal_start + config['nonterminals']['regex'] + nonterminal_end
+        nterm = re.compile(nterm_full_regex)
         if term.match(nonterminal_end) or term.match(nonterminal_start):
             raise NotLL1Grammar(
                 "For LL1 Grammar nonterminal_start and nonterminal_end should be different from terminals")
@@ -125,6 +126,8 @@ class LL1:
             raise NotLL1Grammar("For LL1 Grammar production_separator should be nonempty")
         if term.match(production_sep):
             raise NotLL1Grammar("For LL1 Grammar production_separator should be different from terminals")
+        if nterm.match(production_sep):
+            raise NotLL1Grammar("For LL1 Grammar production_separator should be different from nonterminals")
         if production_sep == nonterminal_start:
             raise NotLL1Grammar("For LL1 Grammar production_separator should be different from nonterminal_start")
 
@@ -138,6 +141,8 @@ class LL1:
                 "For LL1 Grammar rule_separator should be different from nonterminal_end and nonterminal_start")
         if term.match(rule_sep):
             raise NotLL1Grammar("For LL1 Grammar rule_separator should be different from terminals")
+        if nterm.match(rule_sep):
+            raise NotLL1Grammar("For LL1 Grammar rule_separator should be different from nonterminals")
 
     def get_intersection_of_regex(self, regex1, regex2):
         nfa1 = Regex(regex1).to_epsilon_nfa()
