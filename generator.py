@@ -1,6 +1,7 @@
 import re
 import random
 import rstr
+import exrex
 
 from cfg import CFG
 from validator import Validator, LL1
@@ -87,16 +88,23 @@ class Generator:
 			'value': ''
 		}
 
+	def generate_regex_sample(self, r):
+		return exrex.getone(r, limit=self.config['terminals']['max_length'])
+
 	def generate_terminal(self):
 		return {
 			'type': Types.term,
-			'value': rstr.xeger(self.config['terminals']['regex'])[:self.config['terminals']['max_length']]
+			'value': self.generate_regex_sample(
+				self.config['terminals']['regex']
+			)
 		}
 		
 	def generate_nonterminal(self):
 		return {
 			'type': Types.nterm,
-			'value': rstr.xeger(self.config['nonterminals']['regex'])[:self.config['nonterminals']['max_length']]
+			'value': self.generate_regex_sample(
+				self.config['nonterminals']['regex']
+			)
 		}
 
 	def fix_reachable(self, cfg):
